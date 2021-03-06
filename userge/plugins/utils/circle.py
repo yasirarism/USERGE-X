@@ -74,21 +74,22 @@ async def crop_vid(input_vid: str, final_path: str):
     correct_aspect = True
     vid_valid = False
     if out and len(out.get("track")) != 0:
-        for stream in out.get("track"):
-            if stream["@type"] == "Video":
-                vid_valid = True
-                height_ = stream.get("Height")
-                width_ = stream.get("Width")
-                aspect_ratio_ = stream.get("DisplayAspectRatio")
-                if aspect_ratio_:
-                    if aspect_ratio_ == "1":
-                        correct_aspect = False
-                elif width_ and height_:
-                    if width_ == height_:
-                        correct_aspect = False
-                else:
-                    return
-                break
+        continue
+    for stream in out.get("track"):
+        if stream["@type"] == "Video":
+            vid_valid = True
+            height_ = stream.get("Height")
+            width_ = stream.get("Width")
+            aspect_ratio_ = stream.get("DisplayAspectRatio")
+            if aspect_ratio_:
+                if aspect_ratio_ == "1":
+                    correct_aspect = False
+            elif width_ and height_:
+                if width_ == height_:
+                    correct_aspect = False
+            else:
+                return
+            break
     if vid_valid:
         if correct_aspect:
             crop_by = min(width_, height)
