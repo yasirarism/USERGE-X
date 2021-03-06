@@ -5,11 +5,14 @@
 
 import os
 from shutil import rmtree
-import ujson
-from userge import Message, userge
-from userge.utils import runcmd, thumb_from_audio, safe_filename
 
-LOG = userge.getLogger(__name__) 
+import ujson
+
+from userge import Message, userge
+from userge.utils import runcmd, safe_filename, thumb_from_audio
+
+LOG = userge.getLogger(__name__)
+
 
 @userge.on_cmd(
     "circle",
@@ -37,8 +40,8 @@ async def video_note(message: Message):
         note = safe_filename(await reply.download())
         await crop_vid(note, _vid_path)
     else:
-        thumb_loc = (_cache_path + "/thumb.jpg")
-        audio_loc = (_cache_path + "/music.mp3")
+        thumb_loc = _cache_path + "/thumb.jpg"
+        audio_loc = _cache_path + "/music.mp3"
         if reply.audio.thumbs:
             audio_thumb = reply.audio.thumbs[0].file_id
             thumb = await userge.download_media(audio_thumb)
@@ -80,8 +83,8 @@ async def crop_vid(input_vid: str, final_path: str):
                 if aspect_ratio_:
                     if aspect_ratio_ == "1":
                         correct_aspect = False
-                elif (width_ and height_):
-                    if (width_ == height_):
+                elif width_ and height_:
+                    if width_ == height_:
                         correct_aspect = False
                 else:
                     return
