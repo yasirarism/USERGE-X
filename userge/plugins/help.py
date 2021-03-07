@@ -40,8 +40,6 @@ from .fun.stylish import Styled, font_gen
 from .misc.redditdl import reddit_thumb_link
 from .utils.notes import get_inote
 
-
-
 CHANNEL = userge.getCLogger(__name__)
 
 PATH = "userge/xcache"
@@ -486,7 +484,6 @@ if userge.has_bot:
         buttons = [tmp_btns] + buttons
         return text, buttons
 
-
     @userge.bot.on_inline_query()
     async def inline_answer(_, inline_query: InlineQuery):
         results = []
@@ -648,7 +645,9 @@ if userge.has_bot:
                             )
                         )
                     else:
-                        _media_type, _media_url = await Bot_Alive.check_media_link(Config.ALIVE_MEDIA)
+                        _media_type, _media_url = await Bot_Alive.check_media_link(
+                            Config.ALIVE_MEDIA
+                        )
                         if _media_type == "url_gif":
                             results.append(
                                 InlineQueryResultAnimation(
@@ -669,7 +668,11 @@ if userge.has_bot:
                             c_file_id = Bot_Alive.get_bot_cached_fid()
                             if c_file_id is None:
                                 try:
-                                    c_file_id = get_file_id(await userge.bot.get_messages(_media_url[0], _media_url[1]))
+                                    c_file_id = get_file_id(
+                                        await userge.bot.get_messages(
+                                            _media_url[0], _media_url[1]
+                                        )
+                                    )
                                 except Exception as b_rr:
                                     await CHANNEL.log(str(b_rr))
                             if Bot_Alive.is_photo(c_file_id):
@@ -767,8 +770,13 @@ if userge.has_bot:
                 api_host = "https://api.orangefox.download/v2/device/"
                 try:
                     async with get_response.get_session() as session:
-                        r = await get_response.json(f"{api_host}{codename}", session=session)
-                        s = await get_response.json(f"{api_host}{codename}/releases/stable/last", session=session)
+                        r = await get_response.json(
+                            f"{api_host}{codename}", session=session
+                        )
+                        s = await get_response.json(
+                            f"{api_host}{codename}/releases/stable/last",
+                            session=session,
+                        )
                 except ValueError:
                     return
                 info = f"📱 **Device**: {r['fullname']}\n"

@@ -3,20 +3,23 @@
 import asyncio
 from datetime import datetime
 from re import compile as comp_regex
-from typing import List, Optional
+
 from pyrogram import filters
 from pyrogram.errors import BadRequest, FloodWait, Forbidden, MediaEmpty
+from pyrogram.file_id import PHOTO_TYPES, FileId
 from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+
 from userge import Config, Message, get_version, userge, versions
 from userge.core.ext import RawClient
 from userge.utils import get_file_id, rand_array
 
-from pyrogram.file_id import FileId, PHOTO_TYPES
-
-_ALIVE_REGEX = comp_regex(r"http[s]?://(i\.imgur\.com|telegra\.ph/file|t\.me)/(\w+)(?:\.|/)(gif|jpg|png|jpeg|[0-9]+)(?:/([0-9]+))?")
+_ALIVE_REGEX = comp_regex(
+    r"http[s]?://(i\.imgur\.com|telegra\.ph/file|t\.me)/(\w+)(?:\.|/)(gif|jpg|png|jpeg|[0-9]+)(?:/([0-9]+))?"
+)
 _USER_CACHED_MEDIA, _BOT_CACHED_MEDIA = None, None
 
 LOGGER = userge.getLogger(__name__)
+
 
 async def _init() -> None:
     global _USER_CACHED_MEDIA, _BOT_CACHED_MEDIA
@@ -25,12 +28,16 @@ async def _init() -> None:
         if am_type and am_type == "tg_media":
             try:
                 if Config.HU_STRING_SESSION:
-                    _USER_CACHED_MEDIA = get_file_id(await userge.get_messages(am_link[0], am_link[1]))
+                    _USER_CACHED_MEDIA = get_file_id(
+                        await userge.get_messages(am_link[0], am_link[1])
+                    )
             except Exception as u_rr:
                 LOGGER.debug(u_rr)
             try:
                 if userge.has_bot:
-                    _BOT_CACHED_MEDIA = get_file_id(await userge.bot.get_messages(am_link[0], am_link[1]))
+                    _BOT_CACHED_MEDIA = get_file_id(
+                        await userge.bot.get_messages(am_link[0], am_link[1])
+                    )
             except Exception as b_rr:
                 LOGGER.debug(b_rr)
 
@@ -52,9 +59,17 @@ async def send_inline_alive(message: Message) -> None:
     _bot = await userge.bot.get_me()
     try:
         i_res = await userge.get_inline_bot_results(_bot.username, "alive")
-        i_res_id = (await userge.send_inline_bot_result(
-            chat_id=message.chat.id, query_id=i_res.query_id, result_id=i_res.results[0].id
-        )).updates[0].id
+        i_res_id = (
+            (
+                await userge.send_inline_bot_result(
+                    chat_id=message.chat.id,
+                    query_id=i_res.query_id,
+                    result_id=i_res.results[0].id,
+                )
+            )
+            .updates[0]
+            .id
+        )
     except (Forbidden, BadRequest) as ex:
         await message.err(str(ex), del_in=5)
         return
@@ -122,7 +137,9 @@ async def send_alive_message(message: Message) -> None:
             except MediaEmpty:
                 if not message.client.is_bot:
                     try:
-                        refeshed_f_id = get_file_id(await userge.get_messages(media_[0], media_[1]))
+                        refeshed_f_id = get_file_id(
+                            await userge.get_messages(media_[0], media_[1])
+                        )
                         await userge.send_cached_media(
                             chat_id,
                             file_id=refeshed_f_id,
@@ -132,9 +149,6 @@ async def send_alive_message(message: Message) -> None:
                         LOGGER.error(u_err)
                     else:
                         _USER_CACHED_MEDIA = refeshed_f_id
-
-
-
 
 
 if userge.has_bot:
@@ -182,8 +196,6 @@ if userge.has_bot:
 
 def _parse_arg(arg: bool) -> str:
     return " ✅ 𝙴𝚗𝚊𝚋𝚕𝚎𝚍" if arg else " ❌ 𝙳𝚒𝚜𝚊𝚋𝚕𝚎𝚍"
-
-
 
 
 class Bot_Alive:
@@ -258,6 +270,3 @@ class Bot_Alive:
     @staticmethod
     def is_photo(file_id: str) -> bool:
         return bool(FileId.decode(file_id).file_type in PHOTO_TYPES)
-        
-
-
