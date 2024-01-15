@@ -181,7 +181,7 @@ async def ban_user(message: Message):
 
     try:
         get_mem = await message.client.get_chat_member(chat_id, user_id)
-        await message.client.kick_chat_member(chat_id, user_id, int(ban_period))
+        await message.client.kick_chat_member(chat_id, user_id, ban_period)
         await message.edit(
             "#BAN\n\n"
             f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
@@ -474,14 +474,14 @@ async def zombie_clean(message: Message):
     )
     flags = message.flags
     rm_delaccs = "-c" in flags
-    can_clean = check_user.status in ("administrator", "creator")
+    del_users = 0
+    del_stats = r"`Zero zombie accounts found in this chat... WOOHOO group is clean.. \^o^/`"
     if rm_delaccs:
-        del_users = 0
-        del_admins = 0
-        del_total = 0
-        del_stats = r"`Zero zombie accounts found in this chat... WOOHOO group is clean.. \^o^/`"
+        can_clean = check_user.status in ("administrator", "creator")
         if can_clean:
             await message.edit("`Hang on!! cleaning zombie accounts from this chat..`")
+            del_admins = 0
+            del_total = 0
             async for member in message.client.iter_chat_members(chat_id):
                 if member.user.is_deleted:
                     try:
@@ -515,8 +515,6 @@ async def zombie_clean(message: Message):
                 r"`i don't have proper permission to do that! (* ￣︿￣)`", del_in=5
             )
     else:
-        del_users = 0
-        del_stats = r"`Zero zombie accounts found in this chat... WOOHOO group is clean.. \^o^/`"
         await message.edit("`🔎 Searching for zombie accounts in this chat..`")
         async for member in message.client.iter_chat_members(chat_id):
             if member.user.is_deleted:
@@ -563,7 +561,7 @@ def chat_name_(msg: Message):
 async def unpin_msgs(message: Message):
     """ unpin message """
     reply = message.reply_to_message
-    unpinall_ = bool("-all" in message.flags)
+    unpinall_ = "-all" in message.flags
     try:
         if unpinall_:
             await message.client.unpin_all_chat_messages(message.chat.id)
@@ -605,8 +603,8 @@ async def pin_msgs(message: Message):
         return
     try:
         await reply.pin(
-            disable_notification=bool("-s" in message.flags),
-            both_sides=(not bool("-me" in message.flags)),
+            disable_notification="-s" in message.flags,
+            both_sides="-me" not in message.flags,
         )
         await message.delete()
         await CHANNEL.log(

@@ -77,7 +77,7 @@ if userge.has_bot:
 
     def help_btn_generator():
         help_list = [
-            InlineKeyboardButton(cmd.capitalize(), callback_data="ihelp_" + cmd)
+            InlineKeyboardButton(cmd.capitalize(), callback_data=f"ihelp_{cmd}")
             for cmd in list(COMMANDS.keys())
         ]
         return sublists(help_list)

@@ -60,7 +60,7 @@ async def getlink_(message: Message):
 async def get_song_link(link: str) -> Optional[Dict]:
     try:
         r = await get_response.json(
-            "https://api.song.link/v1-alpha.1/links?url=" + quote(link)
+            f"https://api.song.link/v1-alpha.1/links?url={quote(link)}"
         )
     except ValueError:
         r = None
@@ -68,18 +68,16 @@ async def get_song_link(link: str) -> Optional[Dict]:
 
 
 def beautify(text: str) -> str:
-    match = search(r"[A-Z]", text)
-    if match:
+    if match := search(r"[A-Z]", text):
         x = match.group(0)
-        text = text.replace(x, " " + x)
+        text = text.replace(x, f" {x}")
     text = text.title()
     if "Youtube" in text:
-        out = text.replace("Youtube", "YouTube")
+        return text.replace("Youtube", "YouTube")
     elif "Soundcloud" in text:
-        out = text.replace("Soundcloud", "SoundCloud")
+        return text.replace("Soundcloud", "SoundCloud")
     else:
-        out = text
-    return out
+        return text
 
 
 @pool.run_in_thread
@@ -101,7 +99,7 @@ def get_data(resp: Dict) -> str:
             if x != "itunes"
         ]
     )
-    return des + "</b>"
+    return f"{des}</b>"
 
 
 def htmlink(text: str, link: str) -> str:

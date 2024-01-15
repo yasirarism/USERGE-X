@@ -48,9 +48,7 @@ class _AbstractUserge(Methods, RawClient):
     @property
     def is_bot(self) -> bool:
         """ returns client is bot or not """
-        if self._bot is not None:
-            return hasattr(self, 'ubot')
-        return bool(Config.BOT_TOKEN)
+        return bool(Config.BOT_TOKEN) if self._bot is None else hasattr(self, 'ubot')
 
     @property
     def uptime(self) -> str:

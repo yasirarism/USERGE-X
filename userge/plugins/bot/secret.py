@@ -38,11 +38,11 @@ if userge.has_bot:
         msg += f'\n{view_data.get("msg")}'
         # max char. limit in callback answer
         msg = msg[:200]
-        sender_id = sender.id
         receiver = view_data["receiver"]
         receiver_id = int(receiver["id"])
         receiver_name = receiver["name"]
         if mode == "secret":
+            sender_id = sender.id
             if u_id in Config.OWNER_ID or u_id in (sender_id, receiver_id):
                 await c_q.answer(msg, show_alert=True)
             else:
@@ -70,9 +70,9 @@ if userge.has_bot:
                 v_count = 0
             if v_count == 0:
                 view_data["views"] = [u_id]
+            elif u_id in views:
+                return
             else:
-                if u_id in views:
-                    return
                 view_data["views"] = views.append(u_id)
             buttons = InlineKeyboardMarkup(
                 [[InlineKeyboardButton("🔐  SHOW", callback_data=msg_b_data)]]

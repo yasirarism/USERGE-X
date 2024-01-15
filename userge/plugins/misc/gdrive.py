@@ -66,9 +66,7 @@ async def _set_creds(creds: object) -> str:
     result = await _SAVED_SETTINGS.update_one(
         {"_id": "GDRIVE"}, {"$set": {"creds": pickle.dumps(creds)}}, upsert=True
     )
-    if result.upserted_id:
-        return "`Creds Added`"
-    return "`Creds Updated`"
+    return "`Creds Added`" if result.upserted_id else "`Creds Updated`"
 
 
 async def _clear_creds() -> str:
@@ -142,7 +140,7 @@ class _GDrive:
             query = f"name contains '{search_query}'"
         page_token = None
         limit = int(flags.get("-l", 20))
-        page_size = limit if limit < 50 else 50
+        page_size = min(limit, 50)
         fields = "nextPageToken, files(id, name, mimeType, size)"
         results = []
         msg = ""
@@ -190,7 +188,7 @@ class _GDrive:
             out = f"**List GDrive Root Folder** : `{self._parent_id}`\n"
         else:
             out = f"**GDrive Search Query** : `{search_query}`\n"
-        return out + f"**Limit** : `{limit}`\n\n__Results__ : \n\n" + msg
+        return f"{out}**Limit** : `{limit}`\n\n__Results__ : \n\n{msg}"
 
     def _set_permission(self, file_id: str) -> None:
         permissions = {"role": "reader", "type": "anyone"}
@@ -304,16 +302,12 @@ class _GDrive:
                     )
                     self._progress = tmp.format(
                         "".join(
-                            (
-                                Config.FINISHED_PROGRESS_STR
-                                for i in range(math.floor(percentage / 5))
-                            )
+                            Config.FINISHED_PROGRESS_STR
+                            for _ in range(math.floor(percentage / 5))
                         ),
                         "".join(
-                            (
-                                Config.UNFINISHED_PROGRESS_STR
-                                for i in range(20 - math.floor(percentage / 5))
-                            )
+                            Config.UNFINISHED_PROGRESS_STR
+                            for _ in range(20 - math.floor(percentage / 5))
                         ),
                         round(percentage, 2),
                         file_name,
@@ -396,7 +390,7 @@ class _GDrive:
             d_file_obj = MediaIoBaseDownload(d_f, request, chunksize=50 * 1024 * 1024)
             c_time = time.time()
             done = False
-            while done is False:
+            while not done:
                 status, done = d_file_obj.next_chunk(num_retries=5)
                 if self._is_canceled:
                     raise ProcessCanceled
@@ -419,16 +413,12 @@ class _GDrive:
                     )
                     self._progress = tmp.format(
                         "".join(
-                            (
-                                Config.FINISHED_PROGRESS_STR
-                                for i in range(math.floor(percentage / 5))
-                            )
+                            Config.FINISHED_PROGRESS_STR
+                            for _ in range(math.floor(percentage / 5))
                         ),
                         "".join(
-                            (
-                                Config.UNFINISHED_PROGRESS_STR
-                                for i in range(20 - math.floor(percentage / 5))
-                            )
+                            Config.UNFINISHED_PROGRESS_STR
+                            for _ in range(20 - math.floor(percentage / 5))
                         ),
                         round(percentage, 2),
                         name,
@@ -536,16 +526,12 @@ class _GDrive:
         )
         self._progress = tmp.format(
             "".join(
-                (
-                    Config.FINISHED_PROGRESS_STR
-                    for i in range(math.floor(percentage / 5))
-                )
+                Config.FINISHED_PROGRESS_STR
+                for _ in range(math.floor(percentage / 5))
             ),
             "".join(
-                (
-                    Config.UNFINISHED_PROGRESS_STR
-                    for i in range(20 - math.floor(percentage / 5))
-                )
+                Config.UNFINISHED_PROGRESS_STR
+                for _ in range(20 - math.floor(percentage / 5))
             ),
             round(percentage, 2),
             self._completed,
@@ -756,12 +742,11 @@ class Worker(_GDrive):
             link = self._message.filtered_input_str
         found = _GDRIVE_ID.search(link)
         if found and "folder" in link:
-            out = (found.group(1), "folder")
+            return found.group(1), "folder"
         elif found:
-            out = (found.group(1), "file")
+            return found.group(1), "file"
         else:
-            out = (link, "unknown")
-        return out
+            return link, "unknown"
 
     async def setup(self) -> None:
         """ Setup GDrive """
@@ -967,7 +952,7 @@ class Worker(_GDrive):
             out = f"**ERROR** : `{self._output._get_reason()}`"  # pylint: disable=protected-access
         elif self._output is not None and not self._is_canceled:
             out = f"**Uploaded Successfully** __in {m_s} seconds__\n\n{self._output}"
-        elif self._output is not None and self._is_canceled:
+        elif self._output is not None:
             out = self._output
         else:
             out = "`failed to upload.. check logs?`"
@@ -997,7 +982,7 @@ class Worker(_GDrive):
             out = (
                 f"**Downloaded Successfully** __in {m_s} seconds__\n\n`{self._output}`"
             )
-        elif self._output is not None and self._is_canceled:
+        elif self._output is not None:
             out = self._output
         else:
             out = "`failed to download.. check logs?`"
@@ -1028,7 +1013,7 @@ class Worker(_GDrive):
             out = f"**ERROR** : `{self._output._get_reason()}`"  # pylint: disable=protected-access
         elif self._output is not None and not self._is_canceled:
             out = f"**Copied Successfully** __in {m_s} seconds__\n\n{self._output}"
-        elif self._output is not None and self._is_canceled:
+        elif self._output is not None:
             out = self._output
         else:
             out = "`failed to copy.. check logs?`"
@@ -1165,13 +1150,13 @@ class Worker(_GDrive):
 @userge.on_cmd("gsetup", about={"header": "Setup GDrive Creds"})
 async def gsetup_(message: Message):
     """ setup creds """
-    link = "https://theuserge.github.io/deployment.html#3-g_drive_client_id--g_drive_client_secret"
     if Config.G_DRIVE_CLIENT_ID and Config.G_DRIVE_CLIENT_SECRET:
         if message.chat.id == Config.LOG_CHANNEL_ID:
             await Worker(message).setup()
         else:
             await message.err("try in log channel")
     else:
+        link = "https://theuserge.github.io/deployment.html#3-g_drive_client_id--g_drive_client_secret"
         await message.edit(
             "`G_DRIVE_CLIENT_ID` and `G_DRIVE_CLIENT_SECRET` not found!\n"
             f"[Read this]({link}) to know more.",

@@ -28,8 +28,8 @@ async def mentionadmins(message: Message):
     show_id = "-id" in flags
     if not chat_id:
         chat_id = message.chat.id
-    mentions = "<b>Admins in {}</b>\n".format(
-        (await message.client.get_chat(chat_id)).title
+    mentions = (
+        f"<b>Admins in {(await message.client.get_chat(chat_id)).title}</b>\n"
     )
     try:
         async for x in message.client.iter_chat_members(
@@ -40,20 +40,7 @@ async def mentionadmins(message: Message):
             username = x.user.username or None
             is_bot = x.user.is_bot
             full_name = (await message.client.get_user_dict(u_id))["flname"]
-            if status == "creator":
-                if men_admins or men_creator:
-                    owner_ += f"\n 👑 {mention_html(u_id, full_name)}"
-                elif username:
-                    owner_ += "\n 👑 [{}](https://t.me/{})".format(
-                        html.escape(full_name), username
-                    )
-                else:
-                    owner_ += "\n 👑 [{}](tg://openmessage?user_id={})".format(
-                        html.escape(full_name), u_id
-                    )
-                if show_id:
-                    owner_ += f"  `{u_id}`"
-            elif status == "administrator":
+            if status == "administrator":
                 if is_bot:
                     bots_ += f"\n 🤖 {mention_html(u_id, full_name)}"
                     if show_id:
@@ -62,17 +49,22 @@ async def mentionadmins(message: Message):
                     if men_admins:
                         admins_ += f"\n • {mention_html(u_id, full_name)}"
                     elif username:
-                        admins_ += "\n • [{}](https://t.me/{})".format(
-                            html.escape(full_name), username
-                        )
+                        admins_ += f"\n • [{html.escape(full_name)}](https://t.me/{username})"
                     else:
-                        admins_ += "\n • [{}](tg://openmessage?user_id={})".format(
-                            html.escape(full_name), u_id
-                        )
+                        admins_ += f"\n • [{html.escape(full_name)}](tg://openmessage?user_id={u_id})"
                     if show_id:
                         admins_ += f"  `{u_id}`"
 
+            elif status == "creator":
+                if men_admins or men_creator:
+                    owner_ += f"\n 👑 {mention_html(u_id, full_name)}"
+                elif username:
+                    owner_ += f"\n 👑 [{html.escape(full_name)}](https://t.me/{username})"
+                else:
+                    owner_ += f"\n 👑 [{html.escape(full_name)}](tg://openmessage?user_id={u_id})"
+                if show_id:
+                    owner_ += f"  `{u_id}`"
         mentions += f"{owner_}\n{admins_}{bots_}"
     except Exception as e:
-        mentions += " " + str(e) + "\n"
+        mentions += f" {str(e)}" + "\n"
     await message.edit(mentions, disable_web_page_preview=True)

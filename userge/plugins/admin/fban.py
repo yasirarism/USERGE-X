@@ -69,14 +69,11 @@ async def delfed_(message: Message):
         chat_id = chat_.id
         out = f"{chat_.title}\nChat ID: {chat_id}\n"
         found = await FED_LIST.find_one({"chat_id": chat_id})
-        if found:
-            msg_ = out + f"Successfully Removed Fed: **{found['fed_name']}**"
-            await message.edit(msg_, del_in=7)
-            await FED_LIST.delete_one(found)
-        else:
-            return await message.err(
-                out + "**Does't exist in your Fed List !**", del_in=7
-            )
+        if not found:
+            return await message.err(f"{out}**Does't exist in your Fed List !**", del_in=7)
+        msg_ = f"{out}Successfully Removed Fed: **{found['fed_name']}**"
+        await message.edit(msg_, del_in=7)
+        await FED_LIST.delete_one(found)
     await CHANNEL.log(msg_)
 
 
@@ -111,10 +108,10 @@ async def fban_(message: Message):
         return await message.err(
             "Can't F-Ban users that exists in Sudo or Owners", del_in=7
         )
-    failed = []
     total = 0
     reason = reason or "Not specified."
     await message.edit(fban_arg[1])
+    failed = []
     async for data in FED_LIST.find():
         total += 1
         chat_id = int(data["chat_id"])
@@ -142,16 +139,13 @@ async def fban_(message: Message):
         )
     await message.edit(fban_arg[2])
 
-    if len(failed) != 0:
+    if failed:
         status = f"Failed to fban in {len(failed)}/{total} feds.\n"
         for i in failed:
-            status += "• " + i + "\n"
+            status += f"• {i}" + "\n"
     else:
         status = f"Success! Fbanned in `{total}` feds."
-    msg_ = (
-        fban_arg[3].format(user_.mention)
-        + f"\n**Reason:** {reason}\n**Status:** {status}"
-    )
+    msg_ = f"{fban_arg[3].format(user_.mention)}\n**Reason:** {reason}\n**Status:** {status}"
     await message.edit(msg_)
     await CHANNEL.log(msg_)
 
@@ -208,13 +202,13 @@ async def unfban_(message: Message):
         )
     await message.edit(fban_arg[2])
 
-    if len(failed) != 0:
+    if failed:
         status = f"Failed to un-fban in `{len(failed)}/{total}` feds.\n"
         for i in failed:
-            status += "• " + i + "\n"
+            status += f"• {i}" + "\n"
     else:
         status = f"Success! Un-Fbanned in `{total}` feds."
-    msg_ = fban_arg[3].format(user_.mention) + f"\n**Status:** {status}"
+    msg_ = f"{fban_arg[3].format(user_.mention)}\n**Status:** {status}"
     await message.edit(msg_)
     await CHANNEL.log(msg_)
 

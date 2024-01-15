@@ -104,9 +104,7 @@ if userge.has_bot:
             except BadRequest:
                 pass
             ping = "𝗣𝗶𝗻𝗴:  🏓  {} sec\n"
-        alive_s = "➕ 𝗘𝘅𝘁𝗿𝗮 𝗣𝗹𝘂𝗴𝗶𝗻𝘀 : {}\n".format(
-            _parse_arg(Config.LOAD_UNOFFICIAL_PLUGINS)
-        )
+        alive_s = f"➕ 𝗘𝘅𝘁𝗿𝗮 𝗣𝗹𝘂𝗴𝗶𝗻𝘀 : {_parse_arg(Config.LOAD_UNOFFICIAL_PLUGINS)}\n"
         alive_s += f"👥 𝗦𝘂𝗱𝗼 : {_parse_arg(Config.SUDO_ENABLED)}\n"
         alive_s += f"🚨 𝗔𝗻𝘁𝗶𝘀𝗽𝗮𝗺 : {_parse_arg(Config.ANTISPAM_SENTRY)}\n"
         if Config.HEROKU_APP and Config.RUN_DYNO_SAVER:
@@ -143,7 +141,7 @@ class Bot_Alive:
         else:
             link_type = "tg_media"
             if match.group(2) == "c":
-                chat_id = int("-100" + str(match.group(3)))
+                chat_id = int(f"-100{str(match.group(3))}")
                 message_id = match.group(4)
             else:
                 chat_id = match.group(2)
@@ -153,7 +151,7 @@ class Bot_Alive:
 
     @staticmethod
     def alive_info():
-        alive_info = f"""
+        return f"""
 <a href="https://telegram.dog/x_xtests"><b>USERGE-X</a> is Up and Running.</b>
 
   🐍   <b>Python :</b>    <code>v{versions.__python_version__}</code>
@@ -162,15 +160,12 @@ class Bot_Alive:
 
 <b>{Bot_Alive._get_mode()}</b>    <code>|</code>    🕔  <b>{userge.uptime}</b>
 """
-        return alive_info
 
     @staticmethod
     def _get_mode() -> str:
         if RawClient.DUAL_MODE:
             return "↕️  DUAL"
-        if Config.BOT_TOKEN:
-            return "🤖  BOT"
-        return "👤  USER"
+        return "🤖  BOT" if Config.BOT_TOKEN else "👤  USER"
 
     @staticmethod
     def alive_buttons():

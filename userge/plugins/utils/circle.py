@@ -69,7 +69,7 @@ async def crop_vid(input_vid: str, final_path: str):
             height = track.height
             width = track.width
     if aspect_ratio != 1:
-        crop_by = width if (height > width) else height
+        crop_by = min(height, width)
         await runcmd(
             f"""ffmpeg -i {input_vid} -vf \"crop={crop_by}:{crop_by}\" {final_path}"""
         )

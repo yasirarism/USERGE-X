@@ -217,9 +217,7 @@ async def doc_upload(
         message.chat.id, f"`Uploading {str_path} as a doc ... {extra}`"
     )
     start_t = datetime.now()
-    thumb = None
-    if with_thumb:
-        thumb = await get_thumb(str_path)
+    thumb = await get_thumb(str_path) if with_thumb else None
     await message.client.send_chat_action(message.chat.id, "upload_document")
     try:
         msg = await message.client.send_document(
@@ -329,7 +327,6 @@ async def audio_upload(
     with_thumb: bool = True,
     log: bool = True,
 ):
-    title = None
     artist = None
     thumb = None
     duration = 0
@@ -349,8 +346,7 @@ async def audio_upload(
         if not thumb:
             thumb = await get_thumb(str_path)
     metadata = extractMetadata(createParser(str_path))
-    if metadata and metadata.has("title"):
-        title = metadata.get("title")
+    title = metadata.get("title") if metadata and metadata.has("title") else None
     if metadata and metadata.has("artist"):
         artist = metadata.get("artist")
     if metadata and metadata.has("duration"):
@@ -439,9 +435,7 @@ async def get_thumb(path: str = ""):
         metadata = extractMetadata(createParser(path))
         if metadata and metadata.has("duration"):
             return await take_screen_shot(path, metadata.get("duration").seconds)
-    if os.path.exists(LOGO_PATH):
-        return LOGO_PATH
-    return None
+    return LOGO_PATH if os.path.exists(LOGO_PATH) else None
 
 
 async def remove_thumb(thumb: str) -> None:

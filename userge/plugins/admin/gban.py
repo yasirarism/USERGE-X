@@ -379,8 +379,8 @@ async def gban_at_entry(message: Message):
     """ handle gbans """
     chat_id = message.chat.id
     for user in message.new_chat_members:
-        user_id = user.id
         firstname = user.first_name
+        user_id = user.id
         if await WHITELIST.find_one({"user_id": user_id}):
             continue
         gbanned = await GBAN_USER_BASE.find_one({"user_id": user_id})
@@ -450,8 +450,7 @@ async def gban_at_entry(message: Message):
         elif Config.SPAM_PROTECTION:
             try:
                 iv = await get_response.json(
-                    "https://api.intellivoid.net/spamprotection/v1/lookup?query="
-                    + str(user_id)
+                    f"https://api.intellivoid.net/spamprotection/v1/lookup?query={str(user_id)}"
                 )
             except ValueError:
                 pass

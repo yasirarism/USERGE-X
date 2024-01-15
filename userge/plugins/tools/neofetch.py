@@ -23,16 +23,16 @@ from userge.utils import runcmd
 )
 async def neofetch_(message: Message):
     await message.edit("Getting System Info ...")
-    reply = message.reply_to_message
-    reply_id = reply.message_id if reply else None
     if "-img" in message.flags:
         await message.delete()
+        reply = message.reply_to_message
+        reply_id = reply.message_id if reply else None
         await message.client.send_photo(
             message.chat.id, await neo_image(), reply_to_message_id=reply_id
         )
     else:
         await message.edit(
-            "<code>{}</code>".format((await runcmd("neofetch --stdout"))[0]),
+            f'<code>{(await runcmd("neofetch --stdout"))[0]}</code>',
             parse_mode="html",
         )
 
@@ -59,12 +59,7 @@ async def neo_image():
     for u_text in neofetch.splitlines():
         if ":" in u_text:
             ms = u_text.split(":", 1)
-            drawing.text(
-                xy=(315, 45 + x),
-                text=ms[0] + ":",
-                font=font,
-                fill=font_color,
-            )
+            drawing.text(xy=(315, 45 + x), text=f"{ms[0]}:", font=font, fill=font_color)
             drawing.text(
                 xy=((8.5 * len(ms[0])) + 315, 45 + x), text=ms[1], font=font, fill=white
             )

@@ -49,9 +49,7 @@ async def check_logs(message: Message):
         with open("logs/userge.log", "r") as d_f:
             text = d_f.read()
         async with aiohttp.ClientSession() as ses:
-            async with ses.post(
-                NEKOBIN_URL + "api/documents", json={"content": text}
-            ) as resp:
+            async with ses.post(f"{NEKOBIN_URL}api/documents", json={"content": text}) as resp:
                 if resp.status == 201:
                     response = await resp.json()
                     key = response["result"]["key"]

@@ -24,6 +24,8 @@ _LOG = logging.getLogger(__name__)
 logbot.reply_last_msg("Setting Configs ...")
 
 
+
+
 class Config:
     """ Configs to setup Userge """
     API_ID = int(os.environ.get("API_ID"))
@@ -65,7 +67,7 @@ class Config:
     G_DRIVE_IS_TD = os.environ.get("G_DRIVE_IS_TD") == "true"
     LOAD_UNOFFICIAL_PLUGINS = os.environ.get(
         "LOAD_UNOFFICIAL_PLUGINS") == "true"
-    THUMB_PATH = DOWN_PATH + "thumb_image.jpg"
+    THUMB_PATH = f"{DOWN_PATH}thumb_image.jpg"
     TMP_PATH = "userge/plugins/temp/"
     MAX_MESSAGE_LENGTH = 4096
     MSG_DELETE_TIMEOUT = 120
@@ -112,13 +114,12 @@ def get_version() -> str:
     ver = f"{versions.__major__}.{versions.__minor__}.{versions.__micro__}"
     try:
         if "/code-rgb/userge-x" in Config.UPSTREAM_REPO.lower():
-            diff = list(_REPO.iter_commits(f'v{ver}..HEAD'))
-            if diff:
+            if diff := list(_REPO.iter_commits(f'v{ver}..HEAD')):
                 return f"{ver}-LOGAN.{len(diff)}"
-        else:
-            diff = list(_REPO.iter_commits(f'{Config.UPSTREAM_REMOTE}/alpha..HEAD'))
-            if diff:
-                return f"{ver}-fork-[X].{len(diff)}"
+        elif diff := list(
+            _REPO.iter_commits(f'{Config.UPSTREAM_REMOTE}/alpha..HEAD')
+        ):
+            return f"{ver}-fork-[X].{len(diff)}"
     except Exception as e:
         _LOG.error(e)
         return " Check Update"

@@ -84,15 +84,10 @@ if userge.has_bot:
         update = bool(os.path.exists(PATH))
         await dumper(msg_owner.message_id, message.from_user.id, update)
 
-    @userge.bot.on_message(
-        allowForwardFilter
+    @userge.bot.on_message((allowForwardFilter
         & filters.user(list(Config.OWNER_ID))
         & filters.private
-        & filters.reply
-        & ~filters.regex(
-            pattern="^(/.*|\{}(?:spoiler|cbutton)(?:$|.*))".format(Config.SUDO_TRIGGER)
-        )
-    )
+        & filters.reply & ~filters.regex(pattern=f"^(/.*|\{Config.SUDO_TRIGGER}(?:spoiler|cbutton)(?:$|.*))")))
     async def forward_reply(_, message: Message):
         replied = message.reply_to_message
         to_user = replied.forward_from
@@ -239,7 +234,7 @@ if userge.has_bot:
                         await asyncio.sleep(e.x)
         end_ = time()
         b_info = f"🔊  Successfully broadcasted message to ➜  <b>{count} users.</b>"
-        if len(blocked_users) != 0:
+        if blocked_users:
             b_info += f"\n🚫  <b>{len(blocked_users)} users</b> blocked your bot recently, so have been removed."
         b_info += f"\n⏳  <code>Process took: {time_formatter(end_ - start_)}</code>."
         await br_cast.edit(b_info, log=__name__)
@@ -293,9 +288,8 @@ async def dumper(a: int, b: int, update: bool):
 
 def extract_content(msg: Message):  # Modified a bound method
     id_reason = msg.matches[0].group(1)
-    replied = msg.reply_to_message
     user_id, reason = None, None
-    if replied:
+    if replied := msg.reply_to_message:
         fwd = replied.forward_from
         if fwd and id_reason:
             user_id = fwd.id
@@ -309,20 +303,19 @@ def extract_content(msg: Message):  # Modified a bound method
                 pass
             else:
                 user_id = data[0].get(str(replied.message_id))
-    else:
-        if id_reason:
-            data = id_reason.split(maxsplit=1)
-            # Grab First Word and Process it.
-            if len(data) == 2:
-                user, reason = data
-            elif len(data) == 1:
-                user = data[0]
-            # if user id, convert it to integer
-            if user.isdigit():
-                user_id = int(user)
-            # User @ Mention.
-            if user.startswith("@"):
-                user_id = user
+    elif id_reason:
+        data = id_reason.split(maxsplit=1)
+        # Grab First Word and Process it.
+        if len(data) == 2:
+            user, reason = data
+        elif len(data) == 1:
+            user = data[0]
+        # if user id, convert it to integer
+        if user.isdigit():
+            user_id = int(user)
+        # User @ Mention.
+        if user.startswith("@"):
+            user_id = user
     return user_id, reason
 
 

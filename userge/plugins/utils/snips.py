@@ -22,9 +22,7 @@ async def _list_all_snips_(message: Message) -> None:
     """list all snips"""
     all_snips = "<b><u>All Saved SNIPS</u></b>\n\n"
     async for data in SNIPS.find():
-        all_snips += "• <code>${}</code>  {}\n".format(
-            data["snip_name"], CHANNEL.get_link(data["snip_msg_id"])
-        )
+        all_snips += f'• <code>${data["snip_name"]}</code>  {CHANNEL.get_link(data["snip_msg_id"])}\n'
     await message.edit(all_snips, del_in=50)
 
 
@@ -71,7 +69,7 @@ async def add_snip(message: Message) -> None:
     reply = message.reply_to_message
     if reply and reply.text:
         content = reply.text.html
-    content = "{}".format(content or "")
+    content = f'{content or ""}'
     if not (content or (reply and reply.media)):
         await message.err("No Content Found!")
         return

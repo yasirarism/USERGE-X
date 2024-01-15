@@ -1,5 +1,6 @@
 """ setup AFK mode """
 
+
 import asyncio
 import time
 from random import choice, randint
@@ -12,7 +13,7 @@ SAVED_SETTINGS = get_collection("CONFIGS")
 AFK_COLLECTION = get_collection("AFK")
 
 IS_AFK = False
-IS_AFK_FILTER = filters.create(lambda _, __, ___: bool(IS_AFK))
+IS_AFK_FILTER = filters.create(lambda _, __, ___: IS_AFK)
 REASON = ""
 TIME = 0.0
 USERS = {}

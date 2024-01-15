@@ -33,39 +33,25 @@ class Colors:
     # fmt: on
 
 
-@userge.on_cmd(
-    "(?:gimg|img)",
-    about={
-        "header": "Google Image Downloader",
-        "description": "Search and download images from google and upload to telegram",
-        "flags": {
+@userge.on_cmd("(?:gimg|img)", about={"header": "Google Image Downloader", "description": "Search and download images from google and upload to telegram", "flags": {
             "-l": "limit max. [40 for upload | 100 for download] (default is 5)",
             "-q": "quality [0-2] (2 is best | default is 1)",
             "-d": "Upload as document",
             "-gif": "download gifs",
             "-down": "download only",
             "colors": "any color in (⚙️ Color)",
-        },
-        "usage": "{tr}gimg [flags] [query|reply to text]",
-        "color": ["-" + _ for _ in Colors.choice],
-        "examples": [
+        }, "usage": "{tr}gimg [flags] [query|reply to text]", "color": [f"-{_}" for _ in Colors.choice], "examples": [
             "{tr}gimg wallpaper",
             "{tr}gimg -red wallpaper <red wallpapers>",
             "{tr}gimg tigers <upload 5 pics as gallery>",
             "{tr}gimg -d -l20 tigers <upload 20 pics as document>",
             "{tr}gimg -gif rain <download 5 gifs>",
-        ],
-    },
-    name="gimg",
-    del_pre=True,
-    check_downpath=True,
-)
+        ]}, name="gimg", del_pre=True, check_downpath=True)
 async def gimg_down(message: Message):
     """google images downloader"""
     text = ""
     reply = message.reply_to_message
-    args = (message.filtered_input_str or "").strip()
-    if args:
+    if args := (message.filtered_input_str or "").strip():
         text = args
     elif reply and (reply.text or reply.caption):
         text = reply.text or reply.caption
@@ -77,9 +63,9 @@ async def gimg_down(message: Message):
     start_t = datetime.now()
     color_ = None
     flags_ = message.flags
-    allow_gif = bool("gif" in flags_)
-    upload_ = not bool("down" in flags_ or allow_gif)
-    doc_ = bool("d" in flags_)
+    allow_gif = "gif" in flags_
+    upload_ = not ("down" in flags_ or allow_gif)
+    doc_ = "d" in flags_
     limit = int(flags_.get("l", 5))
     limit = min(limit, 40) if upload_ else min(limit, 100)
     if flags_:
@@ -177,8 +163,7 @@ def check_path(path_name: str = "GIMG"):
 @pool.run_in_thread
 def gimg_downloader(arguments):
     response = googleimagesdownload()
-    path_ = response.download(arguments)
-    return path_
+    return response.download(arguments)
 
 
 async def upload_image_grp(results, message: Message, doc: bool = False):

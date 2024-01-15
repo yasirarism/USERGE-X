@@ -101,11 +101,10 @@ Nice To Meet You! I'm **{bot.first_name}** A Bot.
         pattern = r"^(http(?:s?):\/\/)?(www\.)?(t.me)(\/c\/(\d+)|:?\/(\w+))?\/(\d+)$"
         if Config.BOT_MEDIA and not errored:
             media_link = Config.BOT_MEDIA
-            match = re.search(pattern, media_link)
-            if match:
+            if match := re.search(pattern, media_link):
                 _MSG_ID = int(match.group(7))
                 if match.group(5):
-                    _CHAT = int("-100" + match.group(5))
+                    _CHAT = int(f"-100{match.group(5)}")
                 elif match.group(6):
                     _CHAT = match.group(6)
             elif "|" in Config.BOT_MEDIA:

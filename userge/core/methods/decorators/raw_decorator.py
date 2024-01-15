@@ -50,9 +50,7 @@ _INIT_LK = asyncio.Lock()
 async def _update_u_cht(r_m: RawMessage) -> ChatMember:
     if r_m.chat.id not in {**_U_AD_CHT, **_U_NM_CHT}:
         user = await r_m.chat.get_member(_U_ID)
-        user.can_all = None
-        if user.status == "creator":
-            user.can_all = True
+        user.can_all = True if user.status == "creator" else None
         if user.status in ("creator", "administrator"):
             _U_AD_CHT[r_m.chat.id] = user
         else:
@@ -165,9 +163,8 @@ async def _bot_is_present(r_c: Union['_client.Userge', '_client.UsergeBot'],
             except PeerIdInvalid:
                 pass
             _TASK_2_START_TO = time.time()
-    else:
-        if r_m.chat.id not in _B_CMN_CHT:
-            _B_CMN_CHT.append(r_m.chat.id)
+    elif r_m.chat.id not in _B_CMN_CHT:
+        _B_CMN_CHT.append(r_m.chat.id)
     return r_m.chat.id in _B_CMN_CHT
 
 
@@ -203,13 +200,22 @@ async def _both_have_perm(flt: Union['types.raw.Command', 'types.raw.Filter'],
     if flt.check_promote_perm and not (
             (user.can_all or user.can_promote_members) and bot.can_promote_members):
         return False
-    if flt.check_invite_perm and not (
-            (user.can_all or user.can_invite_users) and bot.can_invite_users):
-        return False
-    if flt.check_pin_perm and not (
-            (user.can_all or user.can_pin_messages) and bot.can_pin_messages):
-        return False
-    return True
+    return (
+        False
+        if flt.check_invite_perm
+        and (
+            not user.can_all
+            and not user.can_invite_users
+            or not bot.can_invite_users
+        )
+        else bool(
+            not flt.check_pin_perm
+            or (
+                (user.can_all or user.can_pin_messages)
+                and bot.can_pin_messages
+            )
+        )
+    )
 
 
 class RawDecorator(RawClient):
